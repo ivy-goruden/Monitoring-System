@@ -16,14 +16,14 @@ namespace s21{
             size_t activeAgent_;
             //Controller c_;
             Gtk::Window* window_;
-            Gtk::Image* openButton_;
+            Gtk::Button* openButton_;
             std::string ui_file_;
         private:
             Gui(std::string ui_file);
             ~Gui();
             void initObjects(Glib::RefPtr<Gtk::Builder> builder);
             void AddSignal();
-            static void onOpenButtonClick();
+            void onOpenButtonClick();
 
             
     };

@@ -11,11 +11,10 @@ namespace s21{
 
     void Gui::run(int argc, char** argv) {
         printf("run\n");
-        Glib::RefPtr<Gtk::Builder> builder; //= Gtk::Builder::create_from_file(ui_file_);
+        Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create_from_file(ui_file_);
         initObjects(builder);
-        //AddSignal();
+        AddSignal();
         window_->present();
-        printf("run end\n");
     }
     Gui& Gui::getGui(std::string ui_file){;
         static Gui gui_(ui_file);
@@ -28,19 +27,15 @@ namespace s21{
         gui.run(argc, argv);
     }
     void Gui::initObjects(Glib::RefPtr<Gtk::Builder> builder){
-        window_ = new Gtk::Window();
+        window_ = builder->get_widget<Gtk::Window>("main");
         window_->set_title("Monitoring System");
         window_->set_default_size(1000, 1000);
-        auto button = Gtk::make_managed<Gtk::Button>("Click Me");
-        button->signal_clicked().connect([]() {
-            std::cout << "Button was clicked!" << std::endl;
-        });
-
-        // Add the button to the window
-        window_->set_child(*button);
+        openButton_ = builder->get_widget<Gtk::Button>("on_btn");
     }
     void Gui::AddSignal(){
-        g_signal_connect(openButton_, "clicked", G_CALLBACK(onOpenButtonClick), nullptr);
+        openButton_->signal_clicked().connect(
+            sigc::mem_fun(*this, &Gui::onOpenButtonClick)
+        );
     }
     void Gui::onOpenButtonClick(){
         std::cout << "Open Button clicked" << std::endl;

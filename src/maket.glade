@@ -25,7 +25,7 @@
 xfcghvjb k
 fg hjkm,</property>
   </object>
-  <object class="GtkWindow" id="main" name="main">
+  <object class="GtkWindow" id="main">
     <property name="can-focus">False</property>
     <child>
       <!-- n-columns=3 n-rows=1 -->
@@ -39,16 +39,15 @@ fg hjkm,</property>
             <property name="can-focus">True</property>
             <property name="buffer">log</property>
           </object>
-          <packing>
+          <!-- <packing>
             <property name="left-attach">0</property>
             <property name="top-attach">0</property>
-          </packing>
+          </packing> -->
         </child>
         <child>
           <object class="GtkScrolledWindow">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="shadow-type">in</property>
             <child>
               <object class="GtkViewport">
                 <property name="visible">True</property>
@@ -68,16 +67,15 @@ fg hjkm,</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkImage" id="on_btn" name="on_btn" name="on_btn">
+                              <object class="GtkButton" id="on_btn">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="pixel-size">41</property>
                                 <property name="icon-name">media-playback-start</property>
                               </object>
-                              <packing>
+                              <!-- <packing>
                                 <property name="left-attach">1</property>
                                 <property name="top-attach">0</property>
-                              </packing>
+                              </packing> -->
                             </child>
                             <child>
                               <object class="GtkBox">
@@ -92,11 +90,11 @@ fg hjkm,</property>
                                     <property name="can-focus">True</property>
                                     <property name="buffer">agent_name_demo</property>
                                   </object>
-                                  <packing>
+                                  <!-- <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
                                     <property name="position">0</property>
-                                  </packing>
+                                  </packing> -->
                                 </child>
                                 <child>
                                   <object class="GtkTextView">
@@ -104,17 +102,17 @@ fg hjkm,</property>
                                     <property name="can-focus">True</property>
                                     <property name="buffer">agent_status_demo</property>
                                   </object>
-                                  <packing>
+                                  <!-- <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
                                     <property name="position">1</property>
-                                  </packing>
+                                  </packing> -->
                                 </child>
                               </object>
-                              <packing>
+                              <!-- <packing>
                                 <property name="left-attach">0</property>
                                 <property name="top-attach">0</property>
-                              </packing>
+                              </packing> -->
                             </child>
                           </object>
                         </child>
@@ -125,10 +123,6 @@ fg hjkm,</property>
               </object>
             </child>
           </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">0</property>
-          </packing>
         </child>
         <child>
           <object class="GtkListBox">
@@ -163,14 +157,10 @@ fg hjkm,</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="hexpand">True</property>
-                        <property name="left-margin">8</property>
-                        <property name="right-margin">8</property>
+                        <property name="margin-start">8</property>
+                        <property name="margin-end">8</property>
                         <property name="buffer">info_statuss_label</property>
                       </object>
-                      <packing>
-                        <property name="resize">False</property>
-                        <property name="shrink">True</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkTextView">
@@ -178,10 +168,6 @@ fg hjkm,</property>
                         <property name="can-focus">True</property>
                         <property name="buffer">info_status_value</property>
                       </object>
-                      <packing>
-                        <property name="resize">True</property>
-                        <property name="shrink">True</property>
-                      </packing>
                     </child>
                   </object>
                 </child>
@@ -199,14 +185,10 @@ fg hjkm,</property>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="margin-left">8</property>
-                        <property name="margin-right">8</property>
+                        <property name="margin-start">8</property>
+                        <property name="margin-end">8</property>
                         <property name="label" translatable="yes">тип:</property>
                       </object>
-                      <packing>
-                        <property name="resize">False</property>
-                        <property name="shrink">True</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkTextView">
@@ -214,10 +196,6 @@ fg hjkm,</property>
                         <property name="can-focus">True</property>
                         <property name="buffer">info_type_value</property>
                       </object>
-                      <packing>
-                        <property name="resize">True</property>
-                        <property name="shrink">True</property>
-                      </packing>
                     </child>
                   </object>
                 </child>
@@ -239,10 +217,6 @@ fg hjkm,</property>
                         <property name="margin-end">8</property>
                         <property name="label" translatable="yes">начало:</property>
                       </object>
-                      <packing>
-                        <property name="resize">False</property>
-                        <property name="shrink">True</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkTextView">
@@ -250,10 +224,6 @@ fg hjkm,</property>
                         <property name="can-focus">True</property>
                         <property name="buffer">info_time_value</property>
                       </object>
-                      <packing>
-                        <property name="resize">True</property>
-                        <property name="shrink">True</property>
-                      </packing>
                     </child>
                   </object>
                 </child>
@@ -300,10 +270,6 @@ fg hjkm,</property>
               </object>
             </child>
           </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">0</property>
-          </packing>
         </child>
       </object>
     </child>

@@ -73,7 +73,7 @@ int Notificator::sendTelegram(std::string message, std::string chat_id){
         // Отправляем запрос
         http::write(stream, req);
      // Получаем ответ
-        boost::beast::flat_buffer buffer;
+        boost::beast::multi_buffer buffer;
         http::response<http::string_body> res;
         http::read(stream, buffer, res);
 
