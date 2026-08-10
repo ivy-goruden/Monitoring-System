@@ -1,8 +1,11 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
 #include "../global.hpp"
+#include "../include/subcription.hpp"
+#include "../Core/core.hpp"
+#include "../include/chrono_helpers.hpp"
 namespace s21{
-    class Controller{
+    class Controller: public Listner{
         public:
             Controller();
             ~Controller();
@@ -16,7 +19,7 @@ namespace s21{
             std::string getLog();
         private:
             Core core_;
-            bool logUpdated_;
+            std::string LOG_PATH_ = "../logs";
     };
 }
 #endif
