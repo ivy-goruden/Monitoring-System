@@ -4,13 +4,13 @@
 #include <gtkmm.h> 
 //#include "../Controller/controller.hpp"
 namespace s21{
-    class Gui : public Gtk::Application{
+    class Gui{
         public:
             Gui(const Gui&) = delete;
             Gui& operator=(const Gui&) = delete;
             static Gui& getGui(std::string ui_file = "");
-            void run(int argc, char** argv);
-            static void onActivate(int argc, char** argv, std::string ui_file);
+            void run();
+            Gtk::Window* getWindow();
         private:
             std::map<AgentFile, bool> agents_;
             size_t activeAgent_;
