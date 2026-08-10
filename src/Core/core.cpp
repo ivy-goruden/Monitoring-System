@@ -300,6 +300,7 @@ void Core::WriteLogs(){
     log << logMessage << std::endl;
     log.close();
     printf("Logs written successfully\n");
+    notify(onLogUpdate);
     writeLogsFlag.store(true);
 }
 

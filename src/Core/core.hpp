@@ -15,9 +15,9 @@ namespace fs = std::filesystem;
 #include <fstream>
 #include "../include/chrono_helpers.hpp"
 using namespace s21;
-class Core{
+class Core: public Subscription{
     public:
-        void notify(AgentFile file); //notified to reread config file
+        
         const Agent_t* getAgent(AgentFile file);
         Duration timer_;
         std::atomic<bool> isRunning_;
