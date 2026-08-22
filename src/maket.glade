@@ -21,28 +21,23 @@
     <property name="text" translatable="yes">обычный</property>
   </object>
   <object class="GtkTextBuffer" id="log">
-    <property name="text" translatable="yes">cfhgvjbknmnjbhvgcf 
-xfcghvjb k
-fg hjkm,</property>
+    <property name="text" translatable="yes">Здесь будет лог</property>
   </object>
   <object class="GtkWindow" id="main">
-    <property name="can-focus">False</property>
+    <property name="can-focus">True</property>
     <child>
       <!-- n-columns=3 n-rows=1 -->
       <object class="GtkGrid">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
+        <property name="can-focus">True</property>
         <property name="column-homogeneous">True</property>
         <child>
           <object class="GtkTextView">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="buffer">log</property>
+            <property name="wrap-mode">word</property>
           </object>
-          <!-- <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">0</property>
-          </packing> -->
         </child>
         <child>
           <object class="GtkScrolledWindow">
@@ -53,69 +48,21 @@ fg hjkm,</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <child>
-                  <object class="GtkListBox">
+                  <object class="GtkListBox" id ="agents_list">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkListBoxRow">
+                      <object class="GtkListBoxRow" id="sample_row">
                         <property name="height-request">60</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <child>
-                          <!-- n-columns=2 n-rows=1 -->
-                          <object class="GtkGrid">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <child>
-                              <object class="GtkButton" id="on_btn">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="icon-name">media-playback-start</property>
-                              </object>
-                              <!-- <packing>
-                                <property name="left-attach">1</property>
-                                <property name="top-attach">0</property>
-                              </packing> -->
-                            </child>
-                            <child>
-                              <object class="GtkBox">
-                                <property name="width-request">178</property>
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="vexpand">True</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkTextView">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="buffer">agent_name_demo</property>
-                                  </object>
-                                  <!-- <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing> -->
-                                </child>
-                                <child>
-                                  <object class="GtkTextView">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="buffer">agent_status_demo</property>
-                                  </object>
-                                  <!-- <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing> -->
-                                </child>
-                              </object>
-                              <!-- <packing>
-                                <property name="left-attach">0</property>
-                                <property name="top-attach">0</property>
-                              </packing> -->
-                            </child>
-                          </object>
-                        </child>
+                          <child>
+                            <object class="GtkLabel">
+                              <property name="visible">True</property>
+                              <property name="can-focus">False</property>
+                              <property name="label" translatable="yes">Нет агентов</property>
+                            </object>
+                          </child>
                       </object>
                     </child>
                   </object>
@@ -125,148 +72,16 @@ fg hjkm,</property>
           </object>
         </child>
         <child>
-          <object class="GtkListBox">
+          <object class="GtkBox" id="info_list">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="can-focus">True</property>
             <property name="vexpand">True</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkListBoxRow">
+              <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">АГЕНТ</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkListBoxRow">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="margin-top">3</property>
-                <property name="margin-bottom">3</property>
-                <child>
-                  <object class="GtkPaned" id="info_name_box">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <child>
-                      <object class="GtkTextView">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="hexpand">True</property>
-                        <property name="margin-start">8</property>
-                        <property name="margin-end">8</property>
-                        <property name="buffer">info_statuss_label</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTextView">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="buffer">info_status_value</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkListBoxRow">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <child>
-                  <object class="GtkPaned">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="margin-start">8</property>
-                        <property name="margin-end">8</property>
-                        <property name="label" translatable="yes">тип:</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTextView">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="buffer">info_type_value</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkListBoxRow">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <child>
-                  <object class="GtkPaned">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="margin-start">8</property>
-                        <property name="margin-end">8</property>
-                        <property name="label" translatable="yes">начало:</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTextView">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="buffer">info_time_value</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkListBoxRow">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">МЕТРИКИ</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkListBoxRow">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <child>
-                  <placeholder/>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkListBoxRow">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <child>
-                  <placeholder/>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkListBoxRow">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <child>
-                  <placeholder/>
-                </child>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Выберите агента</property>
               </object>
             </child>
           </object>

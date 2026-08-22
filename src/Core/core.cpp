@@ -2,9 +2,9 @@
 #include "../include/config_parser.hpp"
 using namespace s21;
 
-static std::atomic<bool> writeLogsFlag(false);
-static std::atomic<bool> updateMetricsFlag(false);
-static std::atomic<bool> checkAgentsFlag(false);
+static std::atomic<bool> writeLogsFlag(true);
+static std::atomic<bool> updateMetricsFlag(true);
+static std::atomic<bool> checkAgentsFlag(true);
 
 
 
@@ -125,14 +125,20 @@ int Core::checkIfFuncExists(void* handle, const std::string& funcName){
 
 ConfFile Core::getConfFile(AgentFile file){
     std::string pattern = file.substr(0, file.find_last_of("."))  + ".conf";
-    std::ofstream config_file(pattern, std::ios::out);
+    std::fstream config_file(pattern, std::ios::in);
     if (!config_file.is_open()){
-        std::cerr << "Error: Failed to open config file.\n";
         config_file.close();
-        return "";
+        std::ofstream created_file(file); //создаем файл, если не существует
+        if (!created_file.is_open()){
+            printf("Failed to open/create a file: %s!", file);
+            created_file.close();
+            return "";
+        }
     }
-    config_file.close();
-    return pattern;
+    else{
+        config_file.close();
+        return pattern;
+    }
 }
 
 void* Core::runAgent(Agent_t& agent){
@@ -206,6 +212,11 @@ void Core::RemoveAgent(AgentFile file){
     }
 }
 
+std::vector<Agent_t> Core::getAgents(){
+    std::shared_lock lock(agentMutex_);
+    return agents_;
+}
+
 void Core::startAgent(Agent_t& agent){
     if (agent.handle == nullptr){
         printf("Agent %s: handle is null\n", agent.file.c_str());
@@ -251,27 +262,21 @@ Agent_t* Core::getAgentMod(AgentFile file){
 }
 
 void Core::CheckAgents(){
+    bool agentsListChanged = false;
     printf("Checking agents...\n");
     Core& core = getCore();
     std::vector<AgentFile> missing_agents = core.getMissingAgents();
     for (const auto& agent : missing_agents) {
         core.RemoveAgent(agent);
+        agentsListChanged = true;
     }
     std::vector<AgentFile> new_agents = core.getNewAgents();
     for (const auto& agent : new_agents) {
         core.AddAgent(agent);
+        agentsListChanged = true;
     }
-    std::lock_guard<std::mutex> lock(core.outdatedAgentsMutex_);
-    for (const auto& agentFile : core.outdatedAgents_) {
-        Agent_t updatedAgent = ConfigParser::parseConfig(core.getConfFile(agentFile));
-        core.updateAgent(updatedAgent);
-        Agent_t *newAgent = core.getAgentMod(agentFile);
-        if (updatedAgent.active){
-            core.startAgent(*newAgent);
-        }else{
-            core.stopAgent(*newAgent);
-        }
-
+    if (agentsListChanged){
+        core.notify(onAgentListUpdate);
     }
     checkAgentsFlag.store(true);
 }
@@ -300,7 +305,7 @@ void Core::WriteLogs(){
     log << logMessage << std::endl;
     log.close();
     printf("Logs written successfully\n");
-    notify(onLogUpdate);
+    core.notify(onLogUpdate);
     writeLogsFlag.store(true);
 }
 
@@ -346,4 +351,19 @@ void Core::UpdateMetrics(){
     updateMetricsFlag.store(true);
 }
 
+void Core::onNotify(const std::string event, json jsonData){
+
+    if (event == Subscription::onAgentUpdated){
+        std::shared_lock lock(agentMutex_);
+        AgentFile agentFile = jsonData.get<AgentFile>();
+        Agent_t updatedAgent = ConfigParser::parseConfig(getConfFile(agentFile));
+        updateAgent(updatedAgent);
+        Agent_t *newAgent = getAgentMod(agentFile);
+        if (updatedAgent.active){
+            startAgent(*newAgent);
+        }else{
+            stopAgent(*newAgent);
+        }
+    }
+}
 

@@ -28,7 +28,7 @@ namespace s21{
         bool active;
         std::map<std::string, CritValue_t> crit_values;
         std::map<std::string, Duration> update_time;
-        TimePoint started_at;
+        std::string started_at;
         std::string name;
         std::string type;
         AgentFile file;
@@ -44,7 +44,7 @@ namespace s21{
     const Sign default_crit_sign = EQUAL;
     const int default_update_time = 1000; //seconds
 
-    static Sign parseSign(const std::string& sign_str) {
+    inline Sign parseSign(const std::string& sign_str) {
         if (sign_str == "<")        return LESS;
         if (sign_str == ">")        return GREATER;
         if (sign_str == "=")        return EQUAL;
@@ -53,7 +53,7 @@ namespace s21{
         return default_crit_sign;   // or throw an error
 
     }
-    static std::string to_string(Sign& s){
+    inline std::string to_string(Sign& s){
         switch (s) {
             case LESS:          return "<";
             case GREATER:       return ">";
@@ -63,7 +63,7 @@ namespace s21{
             default:            return "=";
         }
     }
-    static void to_json(json& j, const Sign& s) {
+    inline void to_json(json& j, const Sign& s) {
         switch (s) {
             case LESS:          j = "<"; break;
             case GREATER:       j = ">"; break;
@@ -73,22 +73,22 @@ namespace s21{
         }
     }
 
-    static void to_json(json& j, const CritValue_t& cv) {
+    inline void to_json(json& j, const CritValue_t& cv) {
         j = json{{"value", cv.value}, {"sign", cv.sign}};
     }
 
-    static void to_json(json& j, const Duration& d) {
+    inline void to_json(json& j, const Duration& d) {
         j = d.count();
     }
 
-    static void to_json(json& j, const TimePoint& tp) {
+    inline void to_json(json& j, const TimePoint& tp) {
         auto time_t = std::chrono::system_clock::to_time_t(tp);
         char buf[20];
         std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&time_t));
         j = std::string(buf);
     }
 
-    static void to_json(json& j, const Agent_t& agent) {
+    inline void to_json(json& j, const Agent_t& agent) {
         j = json::object();
         j["name"] = agent.name;
         j["type"] = agent.type;
@@ -106,10 +106,7 @@ namespace s21{
         }
         j["update_time"] = ut_map;
 
-        auto time_t = std::chrono::system_clock::to_time_t(agent.started_at);
-        char buf[20];
-        std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&time_t));
-        j["started_at"] = std::string(buf);
+        j["started_at"] = agent.started_at;
     }
 }
 #endif

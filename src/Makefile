@@ -4,9 +4,9 @@ GTK_CFLAGS = $(shell pkg-config --cflags gtkmm-4.0)
 GTK_LIBS   = $(shell pkg-config --libs gtkmm-4.0)
 LDFLAGS = $(shell pkg-config --libs gtkmm-4.0)
 AGENT_PATH = ../agents
-DELETE = $(shell find . ../agents -maxdepth 3 -type f -regex ".*\.o\|.*\.so$$" 2>/dev/null)
+DELETE = $(shell find . -maxdepth 3 -type f -regex ".*\.o\|.*\.so$$" 2>/dev/null)
 
-BUILD = Core/core.cpp main.cpp Gui/gui.cpp
+BUILD = Core/core.cpp Gui/gui.cpp Controller/controller.cpp main.cpp 
 BUILD_O = $(BUILD:.cpp=.o)
 LIB = $(shell find include -type f -name "*.cpp" 2>/dev/null)
 LIB_O = $(LIB:.cpp=.o)

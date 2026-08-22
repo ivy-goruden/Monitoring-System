@@ -1,17 +1,23 @@
 #include "chrono_helpers.hpp"
 namespace s21{
 
-std::string getTodayDate(){
-    auto now = std::chrono::system_clock::now();
+std::string getTodayDate() {
+    static std::string cached_date;
+    static std::chrono::sys_days cached_day;
     
-    // 2. Truncate to days precision (UTC)
+    auto now = std::chrono::system_clock::now();
     auto today = std::chrono::floor<std::chrono::days>(now);
     
-    // 3. Convert to calendar date
-    std::chrono::year_month_day today_date{today};
-    int year = static_cast<int>(today_date.year());
-    unsigned int month = static_cast<unsigned int>(today_date.month());
-    unsigned int day = static_cast<unsigned int>(today_date.day());
-    return std::to_string(year) + "-" + std::to_string(month) + "-" + std::to_string(day);
+    if (cached_date.empty() || today != cached_day) {
+        cached_day = today;
+        std::time_t tt = std::chrono::system_clock::to_time_t(today);
+        std::tm* utc_tm = std::gmtime(&tt);  // <-- БЕЗ TZ
+        
+        char buffer[11];
+        std::strftime(buffer, sizeof(buffer), "%Y-%m-%d", utc_tm);
+        cached_date = std::string(buffer);
+    }
+    
+    return cached_date;
 }
 }

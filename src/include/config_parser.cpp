@@ -10,11 +10,12 @@ namespace s21{
 
     Agent_t ConfigParser::parseConfig(ConfFile file){
         Agent_t agent;
-        std::ofstream config_file(file, std::ios::out);
+        std::fstream config_file(file, std::ios::in);
         if (!config_file.is_open()){
-            std::cerr << "Error: Failed to open config file.\n";
             config_file.close();
+            printf("Failed to open a file: %s!", file);
             return agent;
+
         }
         config_file.close();
         auto tbl = toml::parse_file(file);
@@ -23,7 +24,9 @@ namespace s21{
         std::string type = tbl["agent"]["type"].value_or(default_agent_type);
         std::map<std::string, CritValue_t> crit_values;
         std::map<std::string, Duration> update_times;
+        printf("parse config");
         if (auto values = tbl["crit_values"].as_array()) {
+            printf("has crit values");
             CritValue_t crit_value;
             for (auto&& node : *values) {
                 // Cast the node to a table
@@ -52,7 +55,8 @@ namespace s21{
         agent.type = type;
         agent.crit_values = crit_values;
         agent.update_time = update_times;
-        agent.started_at = std::chrono::system_clock::now();
+        const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        agent.started_at = std::ctime(&time);
         agent.handle = nullptr;
         return agent;
 
@@ -66,7 +70,7 @@ namespace s21{
         (*agent_sub).insert_or_assign("type", agent.type);
         (*agent_sub).insert_or_assign("file", agent.file);
         (*agent_sub).insert_or_assign("active", agent.active);
-        (*agent_sub).insert_or_assign("started_at", agent.started_at.time_since_epoch().count());
+        (*agent_sub).insert_or_assign("started_at", agent.started_at);
         
         tbl.insert_or_assign("crit_values", toml::array{});
         auto crit_values = tbl["crit_values"].as_array();

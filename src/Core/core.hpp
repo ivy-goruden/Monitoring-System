@@ -1,3 +1,5 @@
+#ifndef CORE_HPP
+#define CORE_HPP
 #include "../global.hpp"
 #include <regex>
 #include <algorithm>
@@ -14,10 +16,11 @@ namespace fs = std::filesystem;
 #include <type_traits>
 #include <fstream>
 #include "../include/chrono_helpers.hpp"
+#include "../include/subscription.hpp"
 using namespace s21;
-class Core: public Subscription{
+class Core: public Subscription, public Listner{
     public:
-        
+        std::vector<Agent_t> getAgents();
         const Agent_t* getAgent(AgentFile file);
         Duration timer_;
         std::atomic<bool> isRunning_;
@@ -25,6 +28,8 @@ class Core: public Subscription{
         Core& operator=(const Core&) = delete;
         static Core& getCore();
         static void mainLoop();
+        void onNotify(const std::string event, json jsonData);
+        ConfFile getConfFile(AgentFile file);
     private:
         mutable std::shared_mutex agentMutex_;
         mutable std::mutex metricsMutex_;
@@ -37,7 +42,6 @@ class Core: public Subscription{
         const std::string LOG_PATH = "../logs/";
 
         int validateAgentFile(AgentFile file);
-        ConfFile getConfFile(AgentFile file);
         std::map<std::string, CritValue_t> getCriticalValues(AgentFile file);
         std::map<std::string, Duration> getUpdateTime(AgentFile file);
         void AddAgent(AgentFile file);
@@ -63,3 +67,4 @@ class Core: public Subscription{
         static void CheckAgents();
         Agent_t* getAgentMod(AgentFile file);
 };
+#endif
