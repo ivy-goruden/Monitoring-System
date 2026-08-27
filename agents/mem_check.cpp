@@ -69,6 +69,12 @@ void Mem_Check::get_mem_metrics(){
         }
         hard_ops = 0;
         hard_throughput = 0.0;
+        std::lock_guard<std::mutex> lock(metric_mutex_);
+        metrics_["ram_total"] = static_cast<float>(ram_total);
+        metrics_["ram"] = static_cast<float>(ram);
+        metrics_["hard_volume"] = static_cast<float>(hard_volume);
+        metrics_["hard_ops"] = static_cast<float>(hard_ops);
+        metrics_["hard_throughput"] = static_cast<float>(hard_throughput);
     }
 
 
@@ -137,15 +143,36 @@ void Mem_Check::execute(){
     mainLoop();
 }
 void Mem_Check::update(std::string JsonConfig){
-    std::lock_guard<std::mutex> lock(crit_value_mutex_);
-    std::lock_guard<std::mutex> lock2(crit_sign_mutex_);
-    nlohmann::json config = nlohmann::json::parse(JsonConfig);
-    for (auto &crit_value : crit_values_) {
-        crit_value.second = config["crit_value"][crit_value.first].get<float>();
-    }
-    timer_ = std::chrono::seconds(config["timer"].get<int>());
-    for (auto &crit_value : crit_values_) {
-        crit_signs_[crit_value.first] = static_cast<Sign>(config["crit_sign"][crit_value.first].get<int>());
+    try {
+        const auto config = nlohmann::json::parse(JsonConfig);
+
+        if (config.contains("update_time") && !config["update_time"].empty()) {
+            for (const auto& [metric, value] : config["update_time"].items()) {
+                if (value.is_number()) {
+                    timer_ = std::chrono::seconds(value.get<int>());
+                    break;
+                }
+            }
+        }
+
+        std::lock_guard<std::mutex> lock(crit_value_mutex_);
+        std::lock_guard<std::mutex> lock2(crit_sign_mutex_);
+        for (auto& [metric, value] : crit_values_) {
+            if (config.contains("crit_values") && config["crit_values"].contains(metric)) {
+                const auto& node = config["crit_values"][metric];
+                if (node.contains("value") && node["value"].is_number()) {
+                    value = node["value"].get<float>();
+                }
+                if (node.contains("sign")) {
+                    if (node["sign"].is_number()) {
+                        crit_signs_[metric] = static_cast<Sign>(node["sign"].get<int>());
+                    } else if (node["sign"].is_string()) {
+                        crit_signs_[metric] = parseSign(node["sign"].get<std::string>());
+                    }
+                }
+            }
+        }
+    } catch (const std::exception&) {
     }
 }
 std::vector<std::string> Mem_Check::getWarnings(){

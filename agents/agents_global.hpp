@@ -22,6 +22,16 @@ namespace s21{
         LESS_EQUAL,
         GREATER_EQUAL
     } Sign;
+    
+    inline Sign parseSign(const std::string& sign_str) {
+        if (sign_str == "<")        return LESS;
+        if (sign_str == ">")        return GREATER;
+        if (sign_str == "=")        return EQUAL;
+        if (sign_str == "≤")        return LESS_EQUAL;
+        if (sign_str == "≥")        return GREATER_EQUAL;
+        return EQUAL;   // or throw an error
+
+    }
 
     class Agent{
         public:

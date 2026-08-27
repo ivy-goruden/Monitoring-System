@@ -17,6 +17,7 @@ namespace fs = std::filesystem;
 #include <fstream>
 #include "../include/chrono_helpers.hpp"
 #include "../include/subscription.hpp"
+#include "../include/notificator.hpp"
 using namespace s21;
 class Core: public Subscription, public Listner{
     public:
@@ -60,11 +61,14 @@ class Core: public Subscription, public Listner{
         ~Core();
         void stop();
         std::map<std::string, float> getMetrics(Agent_t& agent);
+        std::vector<std::string> getWarnings();
         //async
         std::future<void> mainLoopFuture_;
         static void WriteLogs();
         static void UpdateMetrics();
         static void CheckAgents();
         Agent_t* getAgentMod(AgentFile file);
+
+        Notificator* notificator;
 };
 #endif

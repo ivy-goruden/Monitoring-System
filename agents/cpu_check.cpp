@@ -43,6 +43,9 @@ void Cpu_Check::checkCritical(Sign sign, float value, std::string metric){
     } else if (sign == GREATER_EQUAL && metrics_[metric] >= value) {
         createWarning("CPU Usage is above or equal to " + std::to_string(value) + "%");
     }
+    else{
+        createWarning("NOO");
+    }
 }
 
 std::vector<std::string> Cpu_Check::getWarnings(){
@@ -99,8 +102,7 @@ int Cpu_Check::mainLoop() {
         const double total_delta = total2 - total1;
         std::lock_guard<std::mutex> lock(mutex_);
         metrics_["cpu_usage"] = (active_delta / total_delta) * 100.0;
-        mutex_.unlock();
-        checkCritical(LESS, crit_value_.load(), "cpu_usage");
+        checkCritical(crit_sign_, crit_value_.load(), "cpu_usage");
         std::this_thread::sleep_for(timer_);
     }
     return 0;
@@ -112,10 +114,34 @@ void Cpu_Check::getMetrics(std::map<std::string, float> &metrics){
 }
 
 void Cpu_Check::update(std::string JsonConfig){
-    nlohmann::json config = nlohmann::json::parse(JsonConfig);
-    crit_value_.store(config["crit_value"]["cpu_usage"][0].get<float>());
-    timer_ = std::chrono::seconds(config["timer"].get<int>());
-    crit_sign_.store(static_cast<Sign>(config["crit_sign"]["cpu_usage"][1].get<int>()));
+    try {
+        const auto config = nlohmann::json::parse(JsonConfig);
+
+        if (config.contains("update_time") && config["update_time"].contains("cpu_usage") &&
+            config["update_time"]["cpu_usage"].is_number()) {
+            timer_ = std::chrono::seconds(config["update_time"]["cpu_usage"].get<int>());
+        }
+
+        if (config.contains("crit_values") && config["crit_values"].contains("cpu_usage")) {
+            const auto& v = config["crit_values"]["cpu_usage"];
+            if (v.contains("value") && v["value"].is_number()) {
+                crit_value_.store(v["value"].get<float>());
+            }
+            if (v.contains("sign")) {
+                if (v["sign"].is_number()) {
+                    crit_sign_.store(static_cast<Sign>(v["sign"].get<int>()));
+                } else if (v["sign"].is_string()) {
+                    const std::string s = v["sign"].get<std::string>();
+                    if (s == "<") crit_sign_.store(LESS);
+                    else if (s == ">") crit_sign_.store(GREATER);
+                    else if (s == "=") crit_sign_.store(EQUAL);
+                    else if (s == "≤") crit_sign_.store(LESS_EQUAL);
+                    else if (s == "≥") crit_sign_.store(GREATER_EQUAL);
+                }
+            }
+        }
+    } catch (const std::exception&) {
+    }
 }
 
 void Cpu_Check::createWarning(std::string warning){

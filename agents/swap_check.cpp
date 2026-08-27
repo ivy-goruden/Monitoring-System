@@ -99,18 +99,32 @@ int Swap_Check::mainLoop() {
 
 void Swap_Check::update(std::string JsonConfig) {
     try {
-        nlohmann::json config = nlohmann::json::parse(JsonConfig);
-        if (config.contains("crit_value") && config["crit_value"].contains("used_swap")) {
-            crit_value_.store(config["crit_value"]["used_swap"].get<float>());
+        const auto config = nlohmann::json::parse(JsonConfig);
+
+        if (config.contains("update_time") && config["update_time"].contains("used_swap") &&
+            config["update_time"]["used_swap"].is_number()) {
+            timer_ = std::chrono::seconds(config["update_time"]["used_swap"].get<int>());
         }
-        if (config.contains("timer")) {
-            timer_ = std::chrono::seconds(config["timer"].get<int>());
+
+        if (config.contains("crit_values") && config["crit_values"].contains("used_swap")) {
+            const auto& v = config["crit_values"]["used_swap"];
+            if (v.contains("value") && v["value"].is_number()) {
+                crit_value_.store(v["value"].get<float>());
+            }
+            if (v.contains("sign")) {
+                if (v["sign"].is_number()) {
+                    crit_sign_.store(static_cast<Sign>(v["sign"].get<int>()));
+                } else if (v["sign"].is_string()) {
+                    const std::string s = v["sign"].get<std::string>();
+                    if (s == "<") crit_sign_.store(LESS);
+                    else if (s == ">") crit_sign_.store(GREATER);
+                    else if (s == "=") crit_sign_.store(EQUAL);
+                    else if (s == "≤") crit_sign_.store(LESS_EQUAL);
+                    else if (s == "≥") crit_sign_.store(GREATER_EQUAL);
+                }
+            }
         }
-        if (config.contains("crit_sign") && config["crit_sign"].contains("used_swap")) {
-            crit_sign_.store(static_cast<Sign>(config["crit_sign"]["used_swap"].get<int>()));
-        }
-    } catch (const std::exception& e) {
-        createWarning(std::string("config parse error: ") + e.what());
+    } catch (const std::exception&) {
     }
 }
 

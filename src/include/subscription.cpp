@@ -16,16 +16,24 @@ namespace s21{
         }
     }
     void Subscription::notify(const std::string event, json jsonData){
-        std::lock_guard<std::mutex> lock(listeners_mutex_);
-        for (auto& it : listeners_){
-            if (it.first == event){
-                if (it.second != nullptr){
-                    if (jsonData.empty()){
-                        it.second->onNotify(event);
-                    } else {
-                        it.second->onNotify(event, jsonData);
-                    }
+        std::vector<std::pair<const std::string, Listner*>> listeners;
+        {
+            std::lock_guard<std::mutex> lock(listeners_mutex_);
+            for (auto& it : listeners_){
+                if (it.first == event){
+                    listeners.push_back(it);
                 }
+            }
+        }
+
+        for (const auto& [listener_event, listener] : listeners){
+            if (listener == nullptr) {
+                continue;
+            }
+            if (jsonData.empty()){
+                listener->onNotify(listener_event);
+            } else {
+                listener->onNotify(listener_event, jsonData);
             }
         }
     }

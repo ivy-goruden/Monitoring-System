@@ -71,10 +71,17 @@ namespace s21{
         auto row = Gtk::manage(new Gtk::ListBoxRow());
         row->set_name(agent->file); // Устанавливаем имя строки как имя файла агента
         auto box = Gtk::manage(new Gtk::Box(Gtk::Orientation::HORIZONTAL, 10));
-        
+        Agent_Gui agentData = *agent;
+
         auto name_label = Gtk::manage(new Gtk::Label(agent->name));
         auto active_switch = Gtk::manage(new Gtk::Switch());
         active_switch->set_active(agent->active);
+        active_switch->property_active().signal_changed().connect([this, agentData, active_switch]() {
+            auto agentClone = agentData;
+            agentClone.active = active_switch->get_active();
+            json j = agentClone;
+            notify(Subscription::onAgentUpdated, j);
+        });
         
         box->append(*name_label);
         box->append(*active_switch);
@@ -101,6 +108,9 @@ namespace s21{
     }
 
     void Gui::updateInfoList(Gtk::ListBoxRow* row) {
+        if (row == nullptr) {
+            return;
+        }
         int index = row->get_index();
         if (index < 0 || index >= static_cast<int>(agents_.size())) return;
         Agent_Gui &activeAgent = agents_[index];

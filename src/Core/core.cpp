@@ -14,8 +14,10 @@ Core::Core(){
     today_ = Date();
     timer_ = Duration(1);
     isRunning_.store(true);
+    notificator = new Notificator;
 }
 Core::~Core(){
+    delete notificator;
     stop();
 }
 Core& Core::getCore() {
@@ -124,21 +126,17 @@ int Core::checkIfFuncExists(void* handle, const std::string& funcName){
 }
 
 ConfFile Core::getConfFile(AgentFile file){
-    std::string pattern = file.substr(0, file.find_last_of("."))  + ".conf";
-    std::fstream config_file(pattern, std::ios::in);
+    std::string pattern = file.substr(0, file.find_last_of(".")) + ".conf";
+    std::ifstream config_file(pattern, std::ios::in);
     if (!config_file.is_open()){
-        config_file.close();
-        std::ofstream created_file(file); //создаем файл, если не существует
+        std::ofstream created_file(pattern, std::ios::out | std::ios::trunc);
         if (!created_file.is_open()){
-            printf("Failed to open/create a file: %s!", file);
-            created_file.close();
+            printf("Failed to open/create config file: %s!\n", pattern.c_str());
             return "";
         }
+        created_file.close();
     }
-    else{
-        config_file.close();
-        return pattern;
-    }
+    return pattern;
 }
 
 void* Core::runAgent(Agent_t& agent){
@@ -187,7 +185,6 @@ void Core::AddAgent(AgentFile file){
 
     if (confFile != ""){
         Agent_t agent = ConfigParser::parseConfig(confFile);
-        agent.active = true;
         agent.file = file;
         agent.handle = runAgent(agent);
         agents_.push_back(agent);
@@ -229,16 +226,44 @@ void Core::startAgent(Agent_t& agent){
 }
 
 void Core::updateAgent(Agent_t& updated_agent){
-    Agent_t* oldAgent = getAgentMod(updated_agent.file);
-    if (oldAgent == nullptr){
+    void* handle = nullptr;
+    {
+        std::unique_lock lock(agentMutex_);
+        auto agentIt = std::find_if(agents_.begin(), agents_.end(),
+            [&](const Agent_t& agent) { return agent.file == updated_agent.file; });
+        if (agentIt == agents_.end()){
+            return;
+        }
+        handle = agentIt->handle;
+        updated_agent.handle = handle;
+        *agentIt = updated_agent;
+    }
+
+    if (handle == nullptr){
         return;
     }
-    *oldAgent = updated_agent;
+    
     json j = updated_agent;
     std::string json_string = j.dump(4);
     void (*update)(std::string);
-    *(void **) (&update) = dlsym(updated_agent.handle, "update");
-    update(json_string);
+    *(void **) (&update) = dlsym(handle, "update");
+    if (update != nullptr){
+        update(json_string);
+    }
+
+    if (updated_agent.active){
+        void (*start)();
+        *(void **) (&start) = dlsym(handle, "start");
+        if (start != nullptr){
+            start();
+        }
+    } else {
+        void (*stop)();
+        *(void **) (&stop) = dlsym(handle, "stop");
+        if (stop != nullptr){
+            stop();
+        }
+    }
 }
 
 
@@ -261,9 +286,42 @@ Agent_t* Core::getAgentMod(AgentFile file){
     return nullptr;
 }
 
+std::vector<std::string> Core::getWarnings(){
+    std::vector<std::string> warnings;
+    std::lock_guard<std::mutex> metricsLock(metricsMutex_);
+    auto agents = getAgents();
+    for (const Agent_t& agent : agents){
+        if (!agent.active) {
+            continue;
+        }
+        auto crit_values = agent.crit_values;
+        for (auto [metric, val] : crit_values){
+            auto metricIt = metrics_.find(metric);
+            if (metricIt == metrics_.end()) {
+                continue;
+            }
+            Sign sign = val.sign;
+            float value = val.value;
+                if (sign == LESS && metricIt->second < value) {
+                    warnings.push_back(metric + " is below " + std::to_string(value) + "%");
+                } else if (sign == GREATER && metricIt->second > value) {
+                    warnings.push_back(metric + " is above " + std::to_string(value) + "%");
+                } else if (sign == EQUAL && metricIt->second == value) {
+                    warnings.push_back(metric + " is equal to " + std::to_string(value) + "%");
+                } else if (sign == LESS_EQUAL && metricIt->second <= value) {
+                    warnings.push_back(metric + " is below or equal to " + std::to_string(value) + "%");
+                } else if (sign == GREATER_EQUAL && metricIt->second >= value) {
+                    warnings.push_back(metric + " is above or equal to " + std::to_string(value) + "%");
+                }
+        }
+
+    }
+    return warnings;
+}
+
 void Core::CheckAgents(){
     bool agentsListChanged = false;
-    printf("Checking agents...\n");
+    //printf("Checking agents...\n");
     Core& core = getCore();
     std::vector<AgentFile> missing_agents = core.getMissingAgents();
     for (const auto& agent : missing_agents) {
@@ -287,7 +345,7 @@ std::string Core::getLogFileName(){
 }
 
 void Core::WriteLogs(){
-    printf("Writing logs...\n");
+    //printf("Writing logs...\n");
     Core& core = getCore();
     //создаем файл для записи логов либо открываем старый
     std::string logFileName = core.getLogFileName();
@@ -304,7 +362,7 @@ void Core::WriteLogs(){
     std::ofstream log(core.LOG_PATH + "/" + logFileName, std::ios::app);
     log << logMessage << std::endl;
     log.close();
-    printf("Logs written successfully\n");
+    //printf("Logs written successfully\n");
     core.notify(onLogUpdate);
     writeLogsFlag.store(true);
 }
@@ -317,23 +375,20 @@ std::map<std::string, float> Core::getMetrics(Agent_t& agent){
     return metrics;
 }
 
+
 void Core::UpdateMetrics(){
-    printf("Updating metrics...\n");
+    //printf("Updating metrics...\n");
     Core& core = getCore();
 
     std::vector<Agent_t> agents;
     std::map<std::string, float> globalMetrics;
     {
         std::shared_lock lock(core.agentMutex_);
-        for (auto& agent : core.agents_) {
+        for (auto agent : core.agents_) {
             if (agent.active){
                 agents.push_back(agent);
             }
         }
-    }
-    {
-        std::lock_guard<std::mutex> lock(core.metricsMutex_);
-        globalMetrics = core.metrics_;
     }
     for (auto& agent : agents) {
         if (agent.active){
@@ -343,27 +398,41 @@ void Core::UpdateMetrics(){
             }
         }
     }
-    std::lock_guard<std::mutex> lock2(core.metricsMutex_);
-    for (auto metric : globalMetrics) {
-        core.metrics_[metric.first] = metric.second;
+    {
+        std::lock_guard<std::mutex> lock2(core.metricsMutex_);
+        core.metrics_.clear();
+        for (auto metric : globalMetrics) {
+            core.metrics_[metric.first] = metric.second;
+        }
     }
-    std::cout << "Metrics updated successfully" << std::endl;
+    //std::cout << "Metrics updated successfully" << std::endl;
+    std::vector<std::string> allWarnings = core.getWarnings();
+    std::string msg = "";
+    for (auto warn: allWarnings){
+        msg+=warn;
+        msg+=" ";
+    }
+    if (msg!=""){
+        core.notificator->sendEmail("ALERT", msg);
+        core.notificator->sendTelegram(msg);
+    }
     updateMetricsFlag.store(true);
 }
-
 void Core::onNotify(const std::string event, json jsonData){
 
     if (event == Subscription::onAgentUpdated){
-        std::shared_lock lock(agentMutex_);
         AgentFile agentFile = jsonData.get<AgentFile>();
         Agent_t updatedAgent = ConfigParser::parseConfig(getConfFile(agentFile));
-        updateAgent(updatedAgent);
-        Agent_t *newAgent = getAgentMod(agentFile);
-        if (updatedAgent.active){
-            startAgent(*newAgent);
-        }else{
-            stopAgent(*newAgent);
+        updatedAgent.file = agentFile;
+
+        Agent_t* currentAgent = getAgentMod(agentFile);
+        if (currentAgent != nullptr) {
+            updatedAgent.handle = currentAgent->handle;
         }
+
+        updateAgent(updatedAgent);
+        Subscription::notify(onAgentUpdated);
+        notify(onAgentListUpdate);
     }
 }
 

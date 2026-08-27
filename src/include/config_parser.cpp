@@ -13,7 +13,7 @@ namespace s21{
         std::fstream config_file(file, std::ios::in);
         if (!config_file.is_open()){
             config_file.close();
-            printf("Failed to open a file: %s!", file);
+            printf("Failed to open a file: %s!", file.c_str());
             return agent;
 
         }
@@ -22,11 +22,10 @@ namespace s21{
 
         std::string name = tbl["agent"]["name"].value_or(default_agent_name);
         std::string type = tbl["agent"]["type"].value_or(default_agent_type);
+        bool active = tbl["agent"]["active"].value_or(true);
         std::map<std::string, CritValue_t> crit_values;
         std::map<std::string, Duration> update_times;
-        printf("parse config");
-        if (auto values = tbl["crit_values"].as_array()) {
-            printf("has crit values");
+        if (auto values = tbl["crit_value"].as_array()) {
             CritValue_t crit_value;
             for (auto&& node : *values) {
                 // Cast the node to a table
@@ -55,6 +54,7 @@ namespace s21{
         agent.type = type;
         agent.crit_values = crit_values;
         agent.update_time = update_times;
+        agent.active = active;
         const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         agent.started_at = std::ctime(&time);
         agent.handle = nullptr;
@@ -72,14 +72,28 @@ namespace s21{
         (*agent_sub).insert_or_assign("active", agent.active);
         (*agent_sub).insert_or_assign("started_at", agent.started_at);
         
-        tbl.insert_or_assign("crit_values", toml::array{});
-        auto crit_values = tbl["crit_values"].as_array();
+        // tbl.insert_or_assign("crit_values", toml::array{});
+        // auto crit_values = tbl["crit_values"].as_array();
+        // for (auto& [name, value] : agent.crit_values) {
+        //     toml::table critTab;
+        //     critTab.insert_or_assign("name", name);
+        //     critTab.insert_or_assign("value", to_string(value.sign) + std::to_string(value.value));
+        //     crit_values->push_back(critTab);
+        // }
+        auto array_of_tables = toml::array{};
         for (auto& [name, value] : agent.crit_values) {
-            toml::table critTab;
-            critTab.insert_or_assign("name", name);
-            critTab.insert_or_assign("value", to_string(value.sign) + std::to_string(value.value));
-            crit_values->push_back(critTab);
+            toml::table table;
+            table.insert_or_assign("name", name);
+            table.insert_or_assign("value", to_string(value.sign) + std::to_string(value.value));
+            array_of_tables.push_back(table);
         }
+        if (agent.crit_values.empty()){
+            toml::table table;
+            table.insert_or_assign("name", "example_value");
+            table.insert_or_assign("value", "=0");
+            array_of_tables.push_back(table);
+        }
+        tbl.insert_or_assign("crit_value", array_of_tables);
         tbl.insert_or_assign("update_time", toml::array{});
         auto update_time = tbl["update_time"].as_array();
         for (auto& [name, time] : agent.update_time) {
