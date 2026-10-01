@@ -1,17 +1,24 @@
-# Monitoring-System
+# Monitoring System
 
-## Build
+Простой мониторинг состояния Linux-системы. Проект собирает метрики по загрузке CPU, памяти, диску, swap и сети, сохраняет их в логи и показывает данные в графическом интерфейсе.
 
-Requires CMake, a C++20 compiler, GTKmm 4, Boost, Mailio, TgBot, OpenSSL, and
-toml++.
+Что умеет проект:
+- отслеживать основные системные показатели;
+- подключать агенты как отдельные библиотеки;
+- писать логи в папку `logs/`;
+- показывать состояние через GTK-интерфейс;
+- отправлять уведомления по Telegram и email при превышении критических значений.
+
+## Сборка
+
+Требуются: CMake, компилятор C++20, GTKmm 4, Boost, Mailio, TgBot, OpenSSL, toml++.
 
 ```sh
 cmake -S . -B build
 cmake --build build --parallel
 ```
 
-The executable is written to `build/monitoring`; agent shared libraries are
-written to `build/agents/`. Run the application from any working directory with:
+Запуск:
 
 ```sh
 ./build/monitoring
