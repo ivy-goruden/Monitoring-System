@@ -69,3 +69,4 @@ Testing/
 README_RUS.md
 src/include/mail.conf
 agents/*.conf
+src/main

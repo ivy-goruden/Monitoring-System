@@ -1,9 +1,15 @@
 #ifndef CORE_HPP
 #define CORE_HPP
+#if __has_include("build_config.hpp")
+#include "build_config.hpp"
+#else
+#define MONITORING_AGENT_DIR "../agents/"
+#define MONITORING_LOG_DIR "../logs"
+#endif
 #include "../global.hpp"
 #include <regex>
 #include <algorithm>
-#include <filesystem> 
+#include <filesystem>
 namespace fs = std::filesystem;
 #include <dlfcn.h>
 #include <future>
@@ -40,8 +46,8 @@ class Core: public Subscription, public Listner{
         std::map<std::string, float> metrics_; //data we will log to file
         std::vector<AgentFile> outdatedAgents_; //агенты, которые устарели
         Date today_;
-        const std::string AGENT_PATH = "../agents/";
-        const std::string LOG_PATH = "../logs/";
+        const std::string AGENT_PATH = MONITORING_AGENT_DIR;
+        const std::string LOG_PATH = MONITORING_LOG_DIR;
 
         int validateAgentFile(AgentFile file);
         std::map<std::string, CritValue_t> getCriticalValues(AgentFile file);

@@ -1,5 +1,10 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
+#if __has_include("build_config.hpp")
+#include "build_config.hpp"
+#else
+#define MONITORING_LOG_DIR "../logs"
+#endif
 #include "../global.hpp"
 #include "../include/subscription.hpp"
 #include "../Core/core.hpp"
@@ -12,14 +17,8 @@ namespace s21{
             Controller(Gui* gui);
             ~Controller();
             void onNotify(const std::string event, json jsonData = json());
-            // const Agent_t& getAgentInfo(AgentFile file);
-            // void changeAgentName(AgentFile file, std::string name);
-            // void changeAgentType(AgentFile file, std::string type);
-            // void changeAgentCritVal(AgentFile file, std::string metric, float critVal, Sign sign);
-            // void changeAgentUpdateTime(AgentFile file, std::string metric, Duration duration);
-            // void changeAgentState(AgentFile file, bool active);
         private:
-            std::string LOG_PATH_ = "../logs";
+            std::string LOG_PATH_ = MONITORING_LOG_DIR;
             Gui* gui_;
     };
 }
