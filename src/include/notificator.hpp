@@ -18,7 +18,8 @@ namespace s21{
             std::string chat_id;
             std::string authToken;
             std::string receiver;
-            std::chrono::steady_clock::time_point last_sent;
+            std::chrono::steady_clock::time_point last_sentEmail;
+            std::chrono::steady_clock::time_point last_sentTg;
             std::chrono::steady_clock::duration cooldown;
         };
 }

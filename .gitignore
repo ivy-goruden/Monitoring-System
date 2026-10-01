@@ -68,3 +68,4 @@ Testing/
 .cache/
 README_RUS.md
 src/include/mail.conf
+*.conf

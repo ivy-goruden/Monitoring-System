@@ -72,16 +72,55 @@
           </object>
         </child>
         <child>
-          <object class="GtkBox" id="info_list">
+          <object class="GtkBox" id="right_box">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="vexpand">True</property>
             <property name="orientation">vertical</property>
+            <property name="vexpand">True</property>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkBox" id="info_list">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="vexpand">True</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">5</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Выберите агента</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Выберите агента</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">10</property>
+                <property name="margin-top">20</property>
+                <property name="margin-bottom">20</property>
+                <property name="margin-start">10</property>
+                <property name="halign">start</property>
+                <child>
+                  <object class="GtkCheckButton" id="email_check">
+                    <property name="label" translatable="yes">Email</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">False</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="telegram_check">
+                    <property name="label" translatable="yes">Telegram</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">False</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

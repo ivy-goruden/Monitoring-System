@@ -31,6 +31,7 @@ class Core: public Subscription, public Listner{
         static void mainLoop();
         void onNotify(const std::string event, json jsonData);
         ConfFile getConfFile(AgentFile file);
+        void startThreads();
     private:
         mutable std::shared_mutex agentMutex_;
         mutable std::mutex metricsMutex_;
@@ -70,5 +71,10 @@ class Core: public Subscription, public Listner{
         Agent_t* getAgentMod(AgentFile file);
 
         Notificator* notificator;
+        std::atomic_bool emailCheck_;
+        std::atomic_bool tgCheck_;
+        std::thread writeLogsThread;
+        std::thread updateMetricsThread;
+        std::thread checkAgentsThread;
 };
 #endif

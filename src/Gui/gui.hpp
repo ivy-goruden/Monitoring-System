@@ -44,6 +44,9 @@ namespace s21{
             std::vector<Agent_Gui> agents_;
             Gtk::Box* info_list_;
             ActiveAgent *active_agent;
+            Gtk::Box* right_box_;
+            Gtk::CheckButton* email_check_;
+            Gtk::CheckButton* tg_check_;
         private:
             Gui(std::string ui_file);
             ~Gui();
@@ -53,6 +56,9 @@ namespace s21{
             void updateAgentsList();
             Gtk::Widget* createAgentRow(const Agent_Gui* agent);
             void updateInfoList(Gtk::ListBoxRow* row);
+            void onEmailToggled();
+            void onTgToggled();
+            
             
     };
 
