@@ -1,0 +1,4 @@
+#pragma once
+
+#define MONITORING_AGENT_DIR "@CMAKE_BINARY_DIR@/agents/"
+#define MONITORING_LOG_DIR "@CMAKE_SOURCE_DIR@/logs"
